@@ -148,7 +148,7 @@ class _CallPageState extends State<CallPage> {
             child: const Icon(
               Icons.switch_camera_rounded,
               color: Colors.blueAccent,
-              size: 35.0,
+              size: 25.0,
             ),
           ),
         ],
