@@ -81,8 +81,10 @@ class _CallPageState extends State<CallPage> {
         _users.remove(uid);
       });
     }, firstRemoteVideoFrame: (uid, width, height, elapsed) {
-      final info = 'first remote video: $uid $width x $height';
-      _infoStrings.add(info);
+      setState(() {
+        final info = 'first remote video: $uid $width x $height';
+        _infoStrings.add(info);
+      });
     }));
   }
 
@@ -128,7 +130,10 @@ class _CallPageState extends State<CallPage> {
             ),
           ),
           RawMaterialButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              _engine.leaveChannel();
+              Navigator.pop(context);
+            },
             shape: const CircleBorder(),
             elevation: 2.0,
             fillColor: Colors.redAccent,
@@ -148,7 +153,7 @@ class _CallPageState extends State<CallPage> {
             child: const Icon(
               Icons.switch_camera_rounded,
               color: Colors.blueAccent,
-              size: 25.0,
+              size: 20.0,
             ),
           ),
         ],
@@ -167,31 +172,33 @@ class _CallPageState extends State<CallPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 48),
             child: ListView.builder(
+                reverse: true,
+                itemCount: _infoStrings.length,
                 itemBuilder: (BuildContext context, int index) {
-              if (_infoStrings.isEmpty) return const Text('null');
-              return Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 3, horizontal: 10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                        child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 2, horizontal: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Text(
-                        _infoStrings[index],
-                        style: const TextStyle(color: Colors.blueGrey),
-                      ),
-                    ))
-                  ],
-                ),
-              );
-            }),
+                  if (_infoStrings.isEmpty) return const Text('null');
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 3, horizontal: 10),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                            child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 2, horizontal: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Text(
+                            _infoStrings[index],
+                            style: const TextStyle(color: Colors.blueGrey),
+                          ),
+                        ))
+                      ],
+                    ),
+                  );
+                }),
           ),
         ),
       ),

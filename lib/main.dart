@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_test/call.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +44,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final myController = TextEditingController();
   bool _validateError = false;
-  ClientRole? _role = ClientRole.Broadcaster;
+  final ClientRole _role = ClientRole.Broadcaster;
 
   @override
   void dispose() {
@@ -73,20 +75,20 @@ class _MyHomePageState extends State<MyHomePage> {
                         borderSide: BorderSide(width: 1)),
                     hintText: 'Channel Name'),
               ),
-              RadioListTile(
-                  title: const Text('BroadcastChannel'),
-                  value: ClientRole.Broadcaster,
-                  groupValue: _role,
-                  onChanged: (ClientRole? value) =>
-                      setState(() => _role = value)),
-              RadioListTile(
-                  title: const Text('Audience'),
-                  value: ClientRole.Audience,
-                  groupValue: _role,
-                  onChanged: (ClientRole? value) =>
-                      setState(() => _role = value)),
+              // RadioListTile(
+              //     title: const Text('BroadcastChannel'),
+              //     value: ClientRole.Broadcaster,
+              //     groupValue: _role,
+              //     onChanged: (ClientRole? value) =>
+              //         setState(() => _role = value)),
+              // RadioListTile(
+              //     title: const Text('Audience'),
+              //     value: ClientRole.Audience,
+              //     groupValue: _role,
+              //     onChanged: (ClientRole? value) =>
+              //         setState(() => _role = value)),
               ElevatedButton(
-                onPressed: onJoin,
+                onPressed: () => onJoin,
                 style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 40)),
                 child: const Text('join'),
@@ -98,22 +100,34 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<void> onJoin() async {
+  Future<void> get onJoin async {
     setState(() {
       myController.text.isEmpty
           ? _validateError = true
           : _validateError = false;
     });
-    await Permission.camera.request();
-    await Permission.microphone.request();
+    if (myController.text.isNotEmpty) {
+      var cameraStatus = await _handlePermission(Permission.camera);
+      var micStatus = await _handlePermission(Permission.microphone);
+      if (cameraStatus && micStatus) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => CallPage(
+                    role: _role,
+                    channelName: myController.text,
+                  )),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Please Approve over Permissions")));
+      }
+    }
+  }
 
-    await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CallPage(
-            channelName: myController.text,
-            role: _role,
-          ),
-        ));
+  Future<bool> _handlePermission(Permission permission) async {
+    final status = await permission.request();
+    log(status.toString());
+    return status.isGranted;
   }
 }
